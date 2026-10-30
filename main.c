@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#define CAPACITY 10
 
 typedef struct Node Node;
 struct Node
@@ -15,14 +16,20 @@ typedef struct Hash
   Node *item;
 }Hash;
 
+typedef struct Cache
+{
+  Node *next;
+  Node *prev;
+  Hash *cache[CAPACITY];
+}Cache;
+
 Node *head = NULL;
 Node *tail = NULL;
-int index = -1; 
 
-Hash* indexing(int index, Node *item)
+Hash* indexing(Node *item)
 {
   Hash *indexed_node = malloc(sizeof(Hash));
-  indexed_node->index=index;
+  indexed_node->index=item->data%CAPACITY;
   indexed_node->item=item;
   return indexed_node;
 }
@@ -30,7 +37,6 @@ Hash* indexing(int index, Node *item)
 Hash* put(int data)
 {
   Node *item = malloc(sizeof(Node));
-  index++;
   item->data=data;
   item->next=head;
   item->prev=NULL;
@@ -45,7 +51,7 @@ Hash* put(int data)
   {
     tail=item;
   }
-  Hash *indexed_node = indexing(index, item);
+  Hash *indexed_node = indexing(item);
   return indexed_node;
 }
 
@@ -56,8 +62,9 @@ Hash* put(int data)
 
 int main (void)
 {
+  // Cache *cache = malloc(sizeof(Cache)); 
   Hash *a = put(10);
-  Hash *b = put(20);
+  Hash *b = put(13);
   Hash *c = put(30);
 
   printf("key:%d\ndata:%d\n", a->index, a->item->data);
