@@ -13,62 +13,69 @@ struct Node
 typedef struct Hash
 {
   int index;
-  Node *item;
+  Node *node;
+
 }Hash;
 
 typedef struct Cache
 {
-  Node *next;
-  Node *prev;
-  Hash *cache[CAPACITY];
+  Hash *nodes[CAPACITY];
 }Cache;
 
 Node *head = NULL;
 Node *tail = NULL;
 
-Hash* indexing(Node *item)
+Hash* indexing(Node *node)
 {
   Hash *indexed_node = malloc(sizeof(Hash));
-  indexed_node->index=item->data%CAPACITY;
-  indexed_node->item=item;
+  indexed_node->index=node->data%CAPACITY;
+  indexed_node->node=node;
   return indexed_node;
 }
 
-Hash* put(int data)
+Hash* put(Cache *cache, int data)
 {
-  Node *item = malloc(sizeof(Node));
-  item->data=data;
-  item->next=head;
-  item->prev=NULL;
+  Node *node = malloc(sizeof(Node));
+  node->data=data;
+  node->next=head;
+  node->prev=NULL;
 
   if (head != NULL)
   {
-    head->prev=item;
+    head->prev=node;
   }
-  head=item;
+  head=node;
 
   if (tail == NULL)
   {
-    tail=item;
+    tail=node;
   }
-  Hash *indexed_node = indexing(item);
+  Hash *indexed_node = indexing(node);
+  cache->nodes[indexed_node->index]=indexed_node;
   return indexed_node;
 }
 
-// Node get(int data)
-// {
-  
-// }
-
 int main (void)
 {
-  // Cache *cache = malloc(sizeof(Cache)); 
-  Hash *a = put(10);
-  Hash *b = put(13);
-  Hash *c = put(30);
+  Cache *cache = malloc(sizeof(Cache));
+  Hash *a = put(cache,10);
+  Hash *b = put(cache,13);
+  Hash *c = put(cache,30); 
+  printf(
+      "index: %d data: %d\n",
+      cache->nodes[a->index]->index,
+      cache->nodes[a->index]->node->data
+  );
+  printf(
+      "index: %d data: %d\n",
+      cache->nodes[b->index]->index,
+      cache->nodes[b->index]->node->data
+  );
+  printf(
+      "index: %d data: %d\n",
+      cache->nodes[c->index]->index, 
+      cache->nodes[c->index]->node->data
+  );
 
-  printf("key:%d\ndata:%d\n", a->index, a->item->data);
-  printf("key:%d\ndata:%d\n", b->index, b->item->data);
-  printf("key:%d\ndata:%d\n", c->index, c->item->data);
   return 0;
 }
