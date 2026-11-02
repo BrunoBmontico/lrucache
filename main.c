@@ -2,18 +2,18 @@
 #include <stdlib.h>
 #define CAPACITY 10
 
-typedef struct Node Node;
-struct Node
+typedef struct Node
 {
   int data;
-  Node *next;
-  Node *prev;
-};
+  struct Node *next;
+  struct Node *prev;
+}Node;
 
 typedef struct Hash
 {
   int index;
   Node *node;
+  struct Hash *next;
 
 }Hash;
 
@@ -24,6 +24,7 @@ typedef struct Cache
 
 Node *head = NULL;
 Node *tail = NULL;
+Hash *cache_head = NULL;
 
 Hash* indexing(Node *node)
 {
@@ -31,6 +32,16 @@ Hash* indexing(Node *node)
   indexed_node->index=node->data%CAPACITY;
   indexed_node->node=node;
   return indexed_node;
+}
+
+void collision_handle(Cache *cache, Hash *indexed_node)
+{
+  cache->nodes[indexed_node->index]=cache_head;
+  if (cache_head != NULL)
+  { 
+    cache->nodes[indexed_node->index]->next=cache_head;
+  }
+  cache_head=indexed_node;
 }
 
 Hash* put(Cache *cache, int data)
@@ -51,7 +62,7 @@ Hash* put(Cache *cache, int data)
     tail=node;
   }
   Hash *indexed_node = indexing(node);
-  cache->nodes[indexed_node->index]=indexed_node;
+  collision_handle(cache, indexed_node);
   return indexed_node;
 }
 
@@ -59,22 +70,12 @@ int main (void)
 {
   Cache *cache = malloc(sizeof(Cache));
   Hash *a = put(cache,10);
-  Hash *b = put(cache,13);
+  // put(cache,13);
   Hash *c = put(cache,30); 
   printf(
       "index: %d data: %d\n",
       cache->nodes[a->index]->index,
       cache->nodes[a->index]->node->data
-  );
-  printf(
-      "index: %d data: %d\n",
-      cache->nodes[b->index]->index,
-      cache->nodes[b->index]->node->data
-  );
-  printf(
-      "index: %d data: %d\n",
-      cache->nodes[c->index]->index, 
-      cache->nodes[c->index]->node->data
   );
 
   return 0;
