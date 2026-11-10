@@ -14,7 +14,6 @@ typedef struct Hash
   int index;
   Node *node;
   struct Hash *next;
-
 }Hash;
 
 typedef struct Cache
@@ -61,15 +60,50 @@ Hash* put(Cache *cache, int data)
   return indexed_node;
 }
 
+void reordenation(Hash *result)
+{
+  if(result->node != head)
+  {
+    Node *result_next_node = result->node->next;
+    Node *result_prev_node = result->node->prev;   
+
+    if (result_next_node != NULL)
+    {
+      result_next_node->prev = result_prev_node;
+    }
+    if (result_prev_node != NULL)
+    {
+      result_prev_node->next = result_next_node;
+    }
+
+    if (result->node == tail)
+    {
+      tail = result->node->prev;
+    }
+    result->node->prev = NULL;
+    result->node->next = head;
+    head->prev = result->node;
+    head = result->node;
+  }  
+}
+
 int get(Cache *cache, int data)
 {
   Hash *result = cache->nodes[data%CAPACITY];
-  while (result->node->data != data)
-  {
-    result = cache->nodes[data%CAPACITY]->next;
-  }
+  if(result != NULL)
+  { 
+    while (result->node->data != data)
+    {
+      result = result->next;
+    }
+  } else { return -1; }
+
+  reordenation(result);
+ 
   return result->node->data;
 }
+
+
 
 int main (void)
 {
@@ -81,8 +115,8 @@ int main (void)
   put(cache,20);
   put(cache,323);
 
-  int a = get(cache,20);
-  printf("%d\n",a);
+  int c = get(cache, 10);
+  printf("%d\n",c);
 
   return 0;
 }
