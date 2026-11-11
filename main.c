@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define CAPACITY 10
+#define CAPACITY 3
 
 
 typedef struct Node
@@ -27,6 +27,7 @@ typedef struct Cache
 
 Node *head = NULL;
 Node *tail = NULL;
+int cached_nodes = 0;
 
 
 Hash* indexing(Node *node)
@@ -42,6 +43,18 @@ void collision_handle(Cache *cache, Hash *indexed_node)
 {
   indexed_node->next = cache->nodes[indexed_node->index];
   cache->nodes[indexed_node->index] = indexed_node;
+}
+
+
+Hash** search(Cache *cache, int data)
+{
+  Hash **result = &cache->nodes[data%CAPACITY];
+  while (*result != NULL && (*result)->node->data != data)
+  {
+    result = &(*result)->next;  
+    
+  }
+  return result;
 }
 
 
@@ -62,8 +75,21 @@ Hash* put(Cache *cache, int data)
   {
     tail = node;
   }
+  
+  if (cached_nodes >= CAPACITY)
+  {
+    tail->prev->next = NULL;
+    Hash **indexed_tail = search(cache, tail->data);
+    Hash *trash = *indexed_tail;
+    *indexed_tail = trash->next;
+    free(trash);
+    free(tail);
+    cached_nodes--;
+  }
+
   Hash *indexed_node = indexing(node);
   collision_handle(cache, indexed_node);
+  cached_nodes++;
   return indexed_node;
 }
 
@@ -96,46 +122,41 @@ void reordenation(Hash *result)
 }
 
 
-Hash* search(Cache *cache, int data)
-{
-  Hash *result = cache->nodes[data%CAPACITY];
-  if(result != NULL)
-  { 
-    while (result->node->data != data)
-    {
-      result = result->next;
-    }
-  }
-  return result;
-}
-
-
 int get(Cache *cache, int data)
 {
-  Hash *result = search(cache, data);
-  reordenation(result);
-  return result->node->data;
+  Hash **result = search(cache, data);
+  if (*result == NULL) return -1;
+  reordenation(*result);
+  return (*result)->node->data;
 }
 
-// TODO: SIGEGV bug if user try to get the old value
+
 int update(Cache *cache, int old_data, int new_data)
 {
-  Hash *data = search(cache, old_data);
-  reordenation(data);
-  free(data->node);
-  free(data);
-  data = put(cache, new_data);
-  return data->node->data;
+  Hash **result = search(cache, old_data);
+  reordenation(*result);
+  free((*result)->node);
+  free(*result);
+  *result = put(cache, new_data);
+  return (*result)->node->data;
 }
 
+// TODO: print function of the cache in a ordered list
+// feature for the data field and the rest of the code 
+// accept any type of data.
 
 int main (void)
 {
   Cache *cache = malloc(sizeof(Cache));
-  put(cache,10);
-  update(cache,10,66);
-  int a = get(cache,10);
-  printf("%d", a);
+  put(cache,1);
+  put(cache,2);
+  put(cache,3);
 
+  int a = update(cache,1,5);
+  printf("%d\n",a);
+  int b = get(cache,1);
+  printf("%d\n",b);
+  int c = get(cache,5);
+  printf("%d\n",c);
   return 0;
 }
