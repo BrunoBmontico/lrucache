@@ -141,9 +141,10 @@ int update(Cache *cache, int old_data, int new_data)
   return (*result)->node->data;
 }
 
-// TODO: print function of the cache in a ordered list
-// feature for the data field and the rest of the code 
-// accept any type of data.
+// TODO: 
+// print function of the cache in a ordered list.
+// Feature for the data field and the rest of the code 
+// accept any type of data type.
 
 int main (void)
 {
